@@ -49,31 +49,37 @@ class Api:
 
         return data # All checks passed -> return the JSON data back to Robot Framework for additional verification
 
+    #### aou 2 Post/productlists(negative test)
 
-    ###############API 2 _##############
-
-    def post_products_list_should_return_405(self) -> requests.Response:
-        # Build the full URL by combining the base URL with the endpoint
-        # We are using the same endpoint as API 1, but with a different HTTP method (POST)
+    def post_products_list(self) -> requests.Response:
         url = f"{self.BASE_URL}/productsList"
 
-        # Send a POST request to an endpoint that expects only GET
-        # This is an intentional "wrong" action to test negative behavior
-        response = requests.post(url)
-        # Validate that the status code is 405 (Method Not Allowed)
-        # If the server returns anything other than 405, the test must fail
-        if response.status_code != 405:
-            # 'raise AssertionError' stops the test and marks it as FAILED
-            # The error message explain what was expected vs what was received
+        return requests.post(url) # send the Post request - this is the "wrong method" for this endpoint.
+
+    def post_products_list_should_return_405(self) -> dict:
+
+        response = self.post_products_list() # we call the method above to trigger POST request.
+        if response.status_code != 200:
             raise AssertionError(
-                f"Expected status 405, got {response.status_code}. Body: {response.text}"
-
+                f"expected HTTP 200 wrapper, got {response.status_code}. Body: {response.text}"
             )
-        return response # Return the response in case Robot Framework wants to use or log it .
+        try:
+            data = response.json()
+            # Convert response body to JSON.
+            # If conversion fails → response is not valid JSON → FAIL.
+        except ValueError:
+            raise AssertionError(
+                f"Invalid JSON. Body: {response.text}"
+            )
 
+        # Second validation: Response JSON must indicate method is not allowed.
+        if data.get("responseCode") != 405:
+            raise AssertionError(
+                f"Expected responseCode 405, got {data.get('responseCode')}. "f"JSON: {data}"
+            )
 
-
-
+        return data # if we reach here both validations passed - > API is behaving correctly
+        # return structured JSOn for robot framework test usage
 
 
 
