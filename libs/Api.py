@@ -50,6 +50,27 @@ class Api:
         return data # All checks passed -> return the JSON data back to Robot Framework for additional verification
 
 
+    ###############API 2 _##############
+
+    def post_products_list_should_return_405(self) -> requests.Response:
+        # Build the full URL by combining the base URL with the endpoint
+        # We are using the same endpoint as API 1, but with a different HTTP method (POST)
+        url = f"{self.BASE_URL}/productsList"
+
+        # Send a POST request to an endpoint that expects only GET
+        # This is an intentional "wrong" action to test negative behavior
+        response = requests.post(url)
+        # Validate that the status code is 405 (Method Not Allowed)
+        # If the server returns anything other than 405, the test must fail
+        if response.status_code != 405:
+            # 'raise AssertionError' stops the test and marks it as FAILED
+            # The error message explain what was expected vs what was received
+            raise AssertionError(
+                f"Expected status 405, got {response.status_code}. Body: {response.text}"
+
+            )
+        return response # Return the response in case Robot Framework wants to use or log it .
+
 
 
 
