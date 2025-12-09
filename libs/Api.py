@@ -49,7 +49,7 @@ class Api:
 
         return data # All checks passed -> return the JSON data back to Robot Framework for additional verification
 
-    #### aou 2 Post/productlists(negative test)
+    #### api 2 Post/productlists(negative test)
 
     def post_products_list(self) -> requests.Response:
         url = f"{self.BASE_URL}/productsList"
@@ -80,6 +80,59 @@ class Api:
 
         return data # if we reach here both validations passed - > API is behaving correctly
         # return structured JSOn for robot framework test usage
+
+    ###API 3 GET ALL BRANDS LIST
+
+    def get_all_brands(self) -> requests.Response:
+        url = f"{self.BASE_URL}/brandsList"
+        return requests.get(url)
+
+    def get_all_brands_should_return_200(self) -> dict:
+        response = self.get_all_brands()
+        if response.status_code != 200:
+            raise AssertionError(
+                f"Expected status 200, got {response.status_code}. Body: {response.text}"
+            )
+
+        try:
+            data = response.json()
+        except ValueError:
+            raise AssertionError(f"Invalid JSON. Body: {response.text}")
+
+        if "brands" not in data:
+            raise AssertionError(f"'brands' key missing. JSON: {data}")
+
+        return data
+
+
+    ## API 4
+
+    def put_brands_list(self) -> requests.Response:
+        url = f"{self.BASE_URL}/brandsList"
+        return requests.put(url)
+
+    def put_brands_list_should_return_405(self) -> dict:
+        response = self.put_brands_list()
+
+    # Validation 1
+        if response.status_code != 200:
+            raise AssertionError(
+                f"Expected HTTP 200 wrapper, got {response.status_code}. "
+                f"Body: {response.text}"
+            )
+    #validation 2f
+        try:
+            data = response.json()
+        except ValueError:
+            raise AssertionError(f"Invalid JSON. Body: {response.text}")
+    #Validation 3
+
+        if data.get("responseCode") != 405:
+            raise AssertionError(
+                f"Expected responseCode 405, got {data.get('responseCode')}. "f"JSON: {data}"
+            )
+
+        return data
 
 
 
